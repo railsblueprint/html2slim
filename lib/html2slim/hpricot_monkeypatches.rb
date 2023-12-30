@@ -55,7 +55,7 @@ class Hpricot::Elem
 
     return r + slim_ruby_code(r) if ruby?
 
-    r += name unless skip_tag_name?
+    r += slim_tag_name unless skip_tag_name?
     r += slim_id
     r += slim_class
     r += slim_attributes
@@ -80,6 +80,11 @@ class Hpricot::Elem
     attributes["code"]
   end
 
+  def slim_tag_name
+    return attributes["tag"] if attributes["tag"] && attributes["tag"] != ""
+    name
+  end
+
   def skip_tag_name?
     div? and (has_id? || has_class?)
   end
@@ -95,6 +100,7 @@ class Hpricot::Elem
   def slim_attributes
     remove_attribute('class')
     remove_attribute('id')
+    remove_attribute('tag')
     has_attributes?? "[#{attributes_as_html.to_s.strip}]" : ""
   end
 
@@ -111,11 +117,11 @@ class Hpricot::Elem
   end
 
   def ruby?
-    name == "ruby"
+    name == "span" && has_attribute?("code")
   end
 
   def div?
-    name == "div"
+    name == "div" && !has_attribute?("tag")
   end
 end
 

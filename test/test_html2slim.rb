@@ -1,7 +1,7 @@
 require_relative 'helper'
 require 'tmpdir'
 
-class TestHTML2Slim < MiniTest::Test
+class TestHTML2Slim < Minitest::Test
   def setup
     create_html_file
   end
@@ -25,6 +25,12 @@ class TestHTML2Slim < MiniTest::Test
   def test_convert_slim_lang_html
     IO.popen("bin/html2slim test/fixtures/slim-lang.html -", "r") do |f|
       assert_equal File.read("test/fixtures/slim-lang.slim"), f.read
+    end
+  end
+
+  def test_convert_header_tag
+    IO.popen("bin/html2slim test/fixtures/header.html -", "r") do |f|
+      assert_equal File.read("test/fixtures/header.slim"), f.read
     end
   end
 
