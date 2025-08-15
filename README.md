@@ -2,6 +2,10 @@
 
 A Ruby gem providing a command-line tool to convert HTML and ERB files to Slim format.
 
+## Requirements
+
+- Ruby 2.7 - 3.4 (compatible with latest Ruby versions)
+
 ## Installation
 
 Add this line to your application's Gemfile:
