@@ -2,6 +2,8 @@
 
 A Ruby gem providing a command-line tool to convert HTML and ERB files to Slim format.
 
+**Online Converter**: Try the web-based version at [https://railsblueprint.com/html2slim](https://railsblueprint.com/html2slim)
+
 ## Requirements
 
 - Ruby 2.7 - 3.4 (compatible with latest Ruby versions)
