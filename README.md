@@ -24,6 +24,38 @@ gem install blueprint-html2slim
 
 ## Usage
 
+### Programmatic Usage (Ruby)
+
+```ruby
+require 'blueprint/html2slim'
+
+# Create a converter instance
+converter = Blueprint::Html2Slim::Converter.new
+
+# Convert HTML string
+html = '<div class="container"><h1>Hello</h1></div>'
+slim = converter.convert(html)
+puts slim
+# Output: .container
+#           h1 Hello
+
+# Convert ERB string
+erb = '<%= form_for @user do |f| %>
+  <div class="field">
+    <%= f.text_field :name %>
+  </div>
+<% end %>'
+slim = converter.convert(erb)
+# Output: = form_for @user do |f|
+#           .field
+#             = f.text_field :name
+
+# With custom indentation (default is 2)
+converter = Blueprint::Html2Slim::Converter.new(indent_size: 4)
+```
+
+### Command Line Usage
+
 Convert a single file:
 ```bash
 html2slim index.html
@@ -52,9 +84,21 @@ Convert files in a directory recursively:
 html2slim -r ./views
 ```
 
+Convert to target directory (preserves structure):
+```bash
+html2slim -t dist/ -r src/
+# Converts src/views/index.html to dist/views/index.html.slim
+```
+
+Delete source files after conversion:
+```bash
+html2slim -d old_templates/*.erb
+# Converts and deletes the original .erb files
+```
+
 Dry run (preview what would be converted):
 ```bash
-html2slim -d file.html
+html2slim -n file.html
 ```
 
 ## Naming Convention
@@ -67,7 +111,9 @@ html2slim -d file.html
 
 - `-o, --output FILE` - Output file path (only for single file conversion)
 - `-r, --recursive` - Process directories recursively
-- `-d, --dry-run` - Show what would be converted without actually converting
+- `-n, --dry-run` - Show what would be converted without actually converting
+- `-d, --delete` - Delete source files after successful conversion
+- `-t, --target-dir DIR` - Target directory for converted files (preserves directory structure)
 - `-f, --force` - Overwrite existing files without prompting
 - `-b, --backup` - Backup source files with .bak extension
 - `-i, --indent SIZE` - Indentation size in spaces (default: 2)
