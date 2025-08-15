@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Revolutionary AI platform that transforms how you work. Experience the power of advanced artificial intelligence with our cutting-edge API and tools.">
+    <title>AI SaaS - Next Generation AI Platform</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">
+                <span class="text-gradient">AI SaaS</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="features.html">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="pricing.html">Pricing</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="playground.html">Playground</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="api-docs.html">API</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="blog.html">Blog</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.html">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html">Contact</a>
+                    </li>
+                </ul>
+                <div class="ms-3">
+                    <a href="auth/login.html" class="btn btn-outline-primary me-2">Login</a>
+                    <a href="auth/register.html" class="btn btn-gradient">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+    <section class="hero-gradient d-flex align-items-center text-white">
+        <div class="container position-relative">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-1 fw-bold mb-4">The Future of AI is Here</h1>
+                    <p class="lead fs-4 mb-4">Transform your workflow with our advanced AI platform. Build, deploy, and scale AI applications with unprecedented ease.</p>
+                    <div class="d-flex gap-3 mb-4">
+                        <a href="playground.html" class="btn btn-light btn-lg">
+                            <i class="fas fa-play me-2"></i> Try Demo
+                        </a>
+                        <a href="auth/register.html" class="btn btn-outline-light btn-lg">
+                            Start Free Trial
+                        </a>
+                    </div>
+                    <div class="d-flex align-items-center gap-4">
+                        <div>
+                            <h3 class="mb-0">10M+</h3>
+                            <small>API Calls/Day</small>
+                        </div>
+                        <div>
+                            <h3 class="mb-0">99.9%</h3>
+                            <small>Uptime SLA</small>
+                        </div>
+                        <div>
+                            <h3 class="mb-0">50ms</h3>
+                            <small>Avg Response</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="demo-container">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="spinner-grow spinner-grow-sm text-success me-2" role="status"></div>
+                            <span class="small">AI is responding...</span>
+                        </div>
+                        <pre class="mb-0"><code>{
+  "model": "gpt-4-turbo",
+  "response": "Hello! I'm your AI assistant.
+  How can I help you today?",
+  "tokens": 42,
+  "latency": "48ms"
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-4 fw-bold mb-3">Powerful Features</h2>
+                <p class="lead text-muted">Everything you need to build next-generation AI applications</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-brain fa-xl"></i>
+                        </div>
+                        <h4 class="mb-3">Advanced Models</h4>
+                        <p class="text-muted">Access to GPT-4, Claude, and other cutting-edge language models with a single API.</p>
+                        <a href="features.html" class="text-primary text-decoration-none">
+                            Learn more <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-bolt fa-xl"></i>
+                        </div>
+                        <h4 class="mb-3">Lightning Fast</h4>
+                        <p class="text-muted">Sub-50ms response times with our optimized infrastructure and edge computing.</p>
+                        <a href="features.html" class="text-primary text-decoration-none">
+                            Learn more <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt fa-xl"></i>
+                        </div>
+                        <h4 class="mb-3">Enterprise Security</h4>
+                        <p class="text-muted">SOC 2 Type II certified with end-to-end encryption and compliance tools.</p>
+                        <a href="features.html" class="text-primary text-decoration-none">
+                            Learn more <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-code fa-xl"></i>
+                        </div>
+                        <h4 class="mb-3">Developer First</h4>
+                        <p class="text-muted">Comprehensive SDKs for Python, JavaScript, Ruby, and more languages.</p>
+                        <a href="api-docs.html" class="text-primary text-decoration-none">
+                            View docs <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line fa-xl"></i>
+                        </div>
+                        <h4 class="mb-3">Analytics Dashboard</h4>
+                        <p class="text-muted">Real-time insights into usage, performance, and costs with detailed analytics.</p>
+                        <a href="features.html" class="text-primary text-decoration-none">
+                            Learn more <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-users fa-xl"></i>
+                        </div>
+                        <h4 class="mb-3">Team Collaboration</h4>
+                        <p class="text-muted">Built-in tools for teams with role-based access control and shared workspaces.</p>
+                        <a href="features.html" class="text-primary text-decoration-none">
+                            Learn more <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- How It Works -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-4 fw-bold mb-3">How It Works</h2>
+                <p class="lead text-muted">Get started in minutes with our simple 3-step process</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4 text-center">
+                    <div class="mb-3">
+                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                            <span class="fs-3 fw-bold">1</span>
+                        </div>
+                    </div>
+                    <h4>Sign Up</h4>
+                    <p class="text-muted">Create your account and get instant access to our API with free credits.</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="mb-3">
+                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                            <span class="fs-3 fw-bold">2</span>
+                        </div>
+                    </div>
+                    <h4>Integrate</h4>
+                    <p class="text-muted">Use our SDKs or REST API to integrate AI into your application.</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="mb-3">
+                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                            <span class="fs-3 fw-bold">3</span>
+                        </div>
+                    </div>
+                    <h4>Scale</h4>
+                    <p class="text-muted">Monitor usage, optimize performance, and scale to millions of users.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Integrations -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-4 fw-bold mb-3">Integrations</h2>
+                <p class="lead text-muted">Works seamlessly with your favorite tools</p>
+            </div>
+            <div class="row g-3 justify-content-center">
+                <div class="col-6 col-md-3 col-lg-2">
+                    <div class="integration-logo">
+                        <i class="fab fa-python fa-2x text-primary"></i>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <div class="integration-logo">
+                        <i class="fab fa-js fa-2x text-warning"></i>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <div class="integration-logo">
+                        <i class="fab fa-react fa-2x text-info"></i>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <div class="integration-logo">
+                        <i class="fab fa-node fa-2x text-success"></i>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <div class="integration-logo">
+                        <i class="fab fa-docker fa-2x text-primary"></i>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <div class="integration-logo">
+                        <i class="fab fa-aws fa-2x text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Pricing Preview -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-4 fw-bold mb-3">Simple, Transparent Pricing</h2>
+                <p class="lead text-muted">Choose the plan that fits your needs</p>
+            </div>
+            <div class="row g-4 justify-content-center">
+                <div class="col-lg-4">
+                    <div class="pricing-card">
+                        <h4 class="mb-4">Starter</h4>
+                        <h2 class="mb-4">$29<span class="fs-6 text-muted">/month</span></h2>
+                        <ul class="list-unstyled mb-4">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> 100K API calls</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Basic models</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Email support</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Dashboard access</li>
+                        </ul>
+                        <a href="pricing.html" class="btn btn-outline-primary w-100">Learn More</a>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="pricing-card featured">
+                        <span class="badge bg-primary mb-3">Most Popular</span>
+                        <h4 class="mb-4">Pro</h4>
+                        <h2 class="mb-4">$99<span class="fs-6 text-muted">/month</span></h2>
+                        <ul class="list-unstyled mb-4">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> 1M API calls</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> All models</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Priority support</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Advanced analytics</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Custom endpoints</li>
+                        </ul>
+                        <a href="auth/register.html" class="btn btn-gradient w-100">Start Free Trial</a>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="pricing-card">
+                        <h4 class="mb-4">Enterprise</h4>
+                        <h2 class="mb-4">Custom</h2>
+                        <ul class="list-unstyled mb-4">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Unlimited API calls</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Custom models</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Dedicated support</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> SLA guarantee</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> On-premise option</li>
+                        </ul>
+                        <a href="contact.html" class="btn btn-outline-primary w-100">Contact Sales</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Testimonials -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-4 fw-bold mb-3">Trusted by Leaders</h2>
+                <p class="lead text-muted">See what our customers are saying</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="mb-3">
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                            </div>
+                            <p class="mb-3">"The API response time is incredible. We've reduced our processing time by 80% since switching."</p>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                                    JD
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">John Doe</h6>
+                                    <small class="text-muted">CTO at TechCorp</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="mb-3">
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                            </div>
+                            <p class="mb-3">"Best AI platform we've used. The documentation is excellent and integration was seamless."</p>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                                    SM
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Sarah Miller</h6>
+                                    <small class="text-muted">Lead Developer at StartupXYZ</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="mb-3">
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                            </div>
+                            <p class="mb-3">"The support team is amazing. They helped us optimize our implementation for scale."</p>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                                    MJ
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Mike Johnson</h6>
+                                    <small class="text-muted">VP Engineering at DataCo</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- FAQ -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-4 fw-bold mb-3">Frequently Asked Questions</h2>
+                <p class="lead text-muted">Got questions? We've got answers</p>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    What models are available?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    We provide access to GPT-4, GPT-3.5, Claude, PaLM, and many other state-of-the-art language models. All models are accessible through a unified API.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    How does pricing work?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    We offer simple, transparent pricing based on API calls. Each plan includes a set number of monthly calls, with pay-as-you-go options for additional usage.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    Is there a free trial?
+                                </button>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes! We offer a 14-day free trial with $10 in credits. No credit card required to start.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                    What about data privacy?
+                                </button>
+                            </h2>
+                            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    We take data privacy seriously. All data is encrypted in transit and at rest. We're SOC 2 Type II certified and GDPR compliant. Your data is never used to train models.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="py-5 bg-primary text-white">
+        <div class="container text-center">
+            <h2 class="display-4 fw-bold mb-4">Ready to Get Started?</h2>
+            <p class="lead mb-4">Join thousands of developers building the future with AI</p>
+            <div class="d-flex gap-3 justify-content-center">
+                <a href="auth/register.html" class="btn btn-light btn-lg">Start Free Trial</a>
+                <a href="contact.html" class="btn btn-outline-light btn-lg">Talk to Sales</a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="py-5 bg-dark text-white">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-3">
+                    <h5 class="mb-3">AI SaaS</h5>
+                    <p class="text-white-50">Building the future of artificial intelligence, one API call at a time.</p>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-white-50"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white-50"><i class="fab fa-github"></i></a>
+                        <a href="#" class="text-white-50"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="text-white-50"><i class="fab fa-discord"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <h6 class="mb-3">Product</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="features.html" class="text-white-50 text-decoration-none">Features</a></li>
+                        <li class="mb-2"><a href="pricing.html" class="text-white-50 text-decoration-none">Pricing</a></li>
+                        <li class="mb-2"><a href="playground.html" class="text-white-50 text-decoration-none">Playground</a></li>
+                        <li class="mb-2"><a href="api-docs.html" class="text-white-50 text-decoration-none">API Docs</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3">
+                    <h6 class="mb-3">Company</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="about.html" class="text-white-50 text-decoration-none">About</a></li>
+                        <li class="mb-2"><a href="blog.html" class="text-white-50 text-decoration-none">Blog</a></li>
+                        <li class="mb-2"><a href="contact.html" class="text-white-50 text-decoration-none">Contact</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Careers</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3">
+                    <h6 class="mb-3">Legal</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Privacy Policy</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Terms of Service</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Cookie Policy</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Security</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4 border-secondary">
+            <div class="text-center text-white-50">
+                <p class="mb-0">&copy; 2024 AI SaaS. All rights reserved. Built with Bootstrap.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="../js/main.js"></script>
+</body>
+</html>

@@ -60,7 +60,7 @@ Gemfile.lock
 CLAUDE.md
 
 # Old html2slim gem copy
-html2slim/
+/html2slim/
 
 # OS files
 .DS_Store

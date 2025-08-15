@@ -10,7 +10,9 @@ class Html2SlimCLI < Thor
   desc 'FILE [FILE2 ...]', 'Convert HTML/ERB files to Slim format'
   option :output, aliases: '-o', desc: 'Output file path (only for single file conversion)'
   option :recursive, aliases: '-r', type: :boolean, desc: 'Process directories recursively'
-  option :dry_run, aliases: '-d', type: :boolean, desc: 'Show what would be converted without actually converting'
+  option :dry_run, aliases: '-n', type: :boolean, desc: 'Show what would be converted without actually converting'
+  option :delete, aliases: '-d', type: :boolean, desc: 'Delete source files after successful conversion'
+  option :target_dir, aliases: '-t', desc: 'Target directory for converted files (preserves structure)'
   option :force, aliases: '-f', type: :boolean, desc: 'Overwrite existing files without prompting'
   option :backup, aliases: '-b', type: :boolean, desc: 'Backup source files with .bak extension'
   option :indent, aliases: '-i', type: :numeric, default: 2, desc: 'Indentation size (spaces)'
@@ -22,7 +24,9 @@ class Html2SlimCLI < Thor
       puts 'Options:'
       puts '  -o, --output FILE    Output file path (only for single file conversion)'
       puts '  -r, --recursive      Process directories recursively'
-      puts '  -d, --dry-run        Show what would be converted without actually converting'
+      puts '  -n, --dry-run        Show what would be converted without actually converting'
+      puts '  -d, --delete         Delete source files after successful conversion'
+      puts '  -t, --target-dir DIR Target directory for converted files (preserves structure)'
       puts '  -f, --force          Overwrite existing files without prompting'
       puts '  -b, --backup         Backup source files with .bak extension'
       puts '  -i, --indent SIZE    Indentation size in spaces (default: 2)'
@@ -34,6 +38,8 @@ class Html2SlimCLI < Thor
       puts '  html2slim -o output.slim input.html'
       puts '  html2slim -r ./views'
       puts '  html2slim -b file1.html file2.erb'
+      puts '  html2slim -t dist/ -r src/'
+      puts '  html2slim -d old_views/*.erb  # Convert and delete sources'
       exit 0
     elsif given_args.first == 'version' || given_args.include?('-v') || given_args.include?('--version')
       puts 'html2slim 1.0.0'
@@ -64,6 +70,15 @@ class Html2SlimCLI < Thor
     if options[:output] && files.size > 1
       puts 'Error: -o/--output can only be used with a single input file'
       exit 1
+    end
+    
+    if options[:output] && options[:target_dir]
+      puts 'Error: Cannot use both -o/--output and -t/--target-dir together'
+      exit 1
+    end
+    
+    if options[:backup] && options[:delete]
+      puts 'Warning: -b/--backup takes precedence over -d/--delete'
     end
 
     converter = Blueprint::Html2Slim::Converter.new(indent_size: options[:indent])
@@ -102,20 +117,41 @@ class Html2SlimCLI < Thor
     patterns = ['**/*.html', '**/*.erb', '**/*.html.erb']
     patterns.each do |pattern|
       Dir.glob(File.join(dir_path, pattern)).each do |file|
-        process_file(file, converter)
+        process_file(file, converter, dir_path)
       end
     end
   end
 
-  def process_file(file_path, converter)
+  def process_file(file_path, converter, base_dir = nil)
     input_path = Pathname.new(file_path)
 
     # Determine output path
     output_path = if options[:output]
                     # For single file with -o option, use the specified output path
                     Pathname.new(options[:output])
+                  elsif options[:target_dir]
+                    # Calculate relative path from base directory
+                    relative_path = if base_dir
+                                      input_path.relative_path_from(Pathname.new(base_dir))
+                                    else
+                                      input_path.basename
+                                    end
+                    
+                    # Apply smart naming convention to the filename
+                    output_name = case relative_path.to_s
+                                  when /\.html\.erb$/
+                                    relative_path.to_s.sub(/\.html\.erb$/, '.html.slim')
+                                  when /\.erb$/
+                                    relative_path.to_s.sub(/\.erb$/, '.slim')
+                                  when /\.html$/
+                                    relative_path.to_s.sub(/\.html$/, '.html.slim')
+                                  else
+                                    "#{relative_path}.slim"
+                                  end
+                    
+                    Pathname.new(options[:target_dir]).join(output_name)
                   else
-                    # Smart naming convention
+                    # Smart naming convention in place
                     case file_path
                     when /\.html\.erb$/
                       # .html.erb -> .html.slim
@@ -135,6 +171,7 @@ class Html2SlimCLI < Thor
     if options[:dry_run]
       puts "Would convert: #{input_path} -> #{output_path}"
       puts "Would backup: #{input_path} -> #{input_path}.bak" if options[:backup]
+      puts "Would delete: #{input_path}" if options[:delete]
       return true
     end
 
@@ -161,6 +198,13 @@ class Html2SlimCLI < Thor
       File.write(output_path, slim_content)
 
       puts "Converted: #{input_path} -> #{output_path}"
+      
+      # Delete source file if requested (and not backing up)
+      if options[:delete] && !options[:backup]
+        File.delete(input_path)
+        puts "Deleted: #{input_path}"
+      end
+      
       true
     rescue StandardError => e
       puts "Error converting #{input_path}: #{e.message}"
