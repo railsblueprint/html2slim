@@ -1,0 +1,15 @@
+<form action="/users" method="post" class="user-form">
+  <div class="form-group">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="user[name]" required>
+  </div>
+  <div class="form-group">
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="user[email]" required>
+  </div>
+  <div class="form-group">
+    <label for="bio">Bio:</label>
+    <textarea id="bio" name="user[bio]" rows="4"></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>

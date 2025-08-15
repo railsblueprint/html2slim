@@ -1,0 +1,172 @@
+#!/usr/bin/env ruby
+
+require 'thor'
+require 'pathname'
+require_relative '../lib/blueprint/html2slim'
+
+class Html2SlimCLI < Thor
+  class_option :help, aliases: '-h', type: :boolean, desc: 'Show help'
+
+  desc 'FILE [FILE2 ...]', 'Convert HTML/ERB files to Slim format'
+  option :output, aliases: '-o', desc: 'Output file path (only for single file conversion)'
+  option :recursive, aliases: '-r', type: :boolean, desc: 'Process directories recursively'
+  option :dry_run, aliases: '-d', type: :boolean, desc: 'Show what would be converted without actually converting'
+  option :force, aliases: '-f', type: :boolean, desc: 'Overwrite existing files without prompting'
+  option :backup, aliases: '-b', type: :boolean, desc: 'Backup source files with .bak extension'
+  option :indent, aliases: '-i', type: :numeric, default: 2, desc: 'Indentation size (spaces)'
+
+  def self.start(given_args = ARGV, config = {})
+    if given_args.empty? || given_args.first == 'help' || given_args.include?('-h') || given_args.include?('--help')
+      puts 'Usage: html2slim [OPTIONS] FILE [FILE2 ...]'
+      puts ''
+      puts 'Options:'
+      puts '  -o, --output FILE    Output file path (only for single file conversion)'
+      puts '  -r, --recursive      Process directories recursively'
+      puts '  -d, --dry-run        Show what would be converted without actually converting'
+      puts '  -f, --force          Overwrite existing files without prompting'
+      puts '  -b, --backup         Backup source files with .bak extension'
+      puts '  -i, --indent SIZE    Indentation size in spaces (default: 2)'
+      puts '  -h, --help           Show this help message'
+      puts '  -v, --version        Show version'
+      puts ''
+      puts 'Examples:'
+      puts '  html2slim index.html'
+      puts '  html2slim -o output.slim input.html'
+      puts '  html2slim -r ./views'
+      puts '  html2slim -b file1.html file2.erb'
+      exit 0
+    elsif given_args.first == 'version' || given_args.include?('-v') || given_args.include?('--version')
+      puts 'html2slim 1.0.0'
+      exit 0
+    else
+      args = given_args.dup
+      options_index = args.index { |arg| arg.start_with?('-') }
+
+      if options_index
+        files = args[0...options_index]
+        args[options_index..] + files
+      else
+        ['process'] + args
+      end
+
+      super(['process'] + given_args, config)
+    end
+  end
+
+  desc '', ''
+  def process(*files)
+    if files.empty?
+      puts 'Error: No files specified'
+      puts 'Usage: html2slim [OPTIONS] FILE [FILE2 ...]'
+      exit 1
+    end
+
+    if options[:output] && files.size > 1
+      puts 'Error: -o/--output can only be used with a single input file'
+      exit 1
+    end
+
+    converter = Blueprint::Html2Slim::Converter.new(indent_size: options[:indent])
+    processed_count = 0
+    error_count = 0
+
+    files.each do |file_path|
+      if File.directory?(file_path)
+        if options[:recursive]
+          process_directory(file_path, converter)
+        else
+          puts "Skipping directory: #{file_path} (use -r to process recursively)"
+        end
+      elsif File.exist?(file_path)
+        result = process_file(file_path, converter)
+        if result
+          processed_count += 1
+        else
+          error_count += 1
+        end
+      else
+        puts "File not found: #{file_path}"
+        error_count += 1
+      end
+    end
+
+    puts "\nConversion complete: #{processed_count} file(s) processed, #{error_count} error(s)"
+    exit(1) if error_count.positive?
+  end
+
+  default_task :process
+
+  private
+
+  def process_directory(dir_path, converter)
+    patterns = ['**/*.html', '**/*.erb', '**/*.html.erb']
+    patterns.each do |pattern|
+      Dir.glob(File.join(dir_path, pattern)).each do |file|
+        process_file(file, converter)
+      end
+    end
+  end
+
+  def process_file(file_path, converter)
+    input_path = Pathname.new(file_path)
+
+    # Determine output path
+    output_path = if options[:output]
+                    # For single file with -o option, use the specified output path
+                    Pathname.new(options[:output])
+                  else
+                    # Smart naming convention
+                    case file_path
+                    when /\.html\.erb$/
+                      # .html.erb -> .html.slim
+                      Pathname.new(file_path.sub(/\.html\.erb$/, '.html.slim'))
+                    when /\.erb$/
+                      # .erb -> .slim
+                      Pathname.new(file_path.sub(/\.erb$/, '.slim'))
+                    when /\.html$/
+                      # .html -> .html.slim
+                      Pathname.new(file_path.sub(/\.html$/, '.html.slim'))
+                    else
+                      # Default: add .slim extension
+                      Pathname.new("#{file_path}.slim")
+                    end
+                  end
+
+    if options[:dry_run]
+      puts "Would convert: #{input_path} -> #{output_path}"
+      puts "Would backup: #{input_path} -> #{input_path}.bak" if options[:backup]
+      return true
+    end
+
+    if output_path.exist? && !options[:force]
+      print "File exists: #{output_path}. Overwrite? (y/n): "
+      response = $stdin.gets.chomp.downcase
+      return false unless response == 'y'
+    end
+
+    begin
+      html_content = File.read(input_path)
+      slim_content = converter.convert(html_content)
+
+      # Create backup if requested
+      if options[:backup]
+        backup_path = Pathname.new("#{file_path}.bak")
+        File.rename(input_path, backup_path)
+        puts "Backed up: #{input_path} -> #{backup_path}"
+      end
+
+      output_path.dirname.mkpath
+      # Ensure content ends with newline when writing to file
+      slim_content += "\n" unless slim_content.end_with?("\n")
+      File.write(output_path, slim_content)
+
+      puts "Converted: #{input_path} -> #{output_path}"
+      true
+    rescue StandardError => e
+      puts "Error converting #{input_path}: #{e.message}"
+      false
+    end
+  end
+end
+
+Html2SlimCLI.start(ARGV)

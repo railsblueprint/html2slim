@@ -1,0 +1,15 @@
+<div class="users-list">
+  <h2><%= @title %></h2>
+  <% if @users.any? %>
+    <ul>
+      <% @users.each do |user| %>
+        <li>
+          <%= link_to user.name, user_path(user) %>
+          <span class="email"><%= user.email %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p>No users found</p>
+  <% end %>
+</div>
