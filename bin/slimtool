@@ -1,0 +1,238 @@
+#!/usr/bin/env ruby
+require 'thor'
+require 'pathname'
+require_relative '../lib/blueprint/html2slim'
+
+class SlimToolCLI < Thor
+  def self.exit_on_failure?
+    true
+  end
+
+  class_option :help, aliases: '-h', type: :boolean, desc: 'Show help'
+
+  desc 'fix FILE [FILE2 ...]', 'Fix common Slim syntax issues'
+  option :fix_slashes, type: :boolean, default: true, desc: 'Fix forward slashes that should be text (e.g., span /month)'
+  option :fix_multiline, type: :boolean, default: true, desc: 'Fix multiline text blocks using pipe notation'
+  option :backup, aliases: '-b', type: :boolean, desc: 'Create .bak backup before fixing'
+  option :dry_run, aliases: '-n', type: :boolean, desc: 'Preview changes without modifying files'
+  def fix(*files)
+    if files.empty?
+      puts 'Error: No files specified'
+      puts 'Usage: slimtool fix FILE [FILE2 ...]'
+      exit 1
+    end
+
+    require_relative '../lib/blueprint/html2slim/slim_fixer'
+    fixer = Blueprint::Html2Slim::SlimFixer.new(options)
+
+    files.each do |file|
+      if File.exist?(file)
+        result = fixer.fix_file(file)
+        if result[:success]
+          puts "Fixed: #{file}"
+          puts "  Issues fixed: #{result[:fixes].join(", ")}" if result[:fixes].any?
+        else
+          puts "Error fixing #{file}: #{result[:error]}"
+        end
+      else
+        puts "File not found: #{file}"
+      end
+    end
+  end
+
+  desc 'extract FILE', 'Extract content sections from Slim file'
+  option :keep, type: :array, desc: 'Keep only specified sections (e.g., main, article, .content)'
+  option :remove, type: :array, desc: 'Remove specified sections (e.g., head, nav, footer, script)'
+  option :output, aliases: '-o', desc: 'Output file path (default: FILE_extracted.slim)'
+  option :remove_wrapper, type: :boolean, desc: 'Remove single outer wrapper element if present'
+  option :outline, type: :numeric, desc: 'Extract outline up to depth N (e.g., 2 = top two levels only)'
+  option :selector, type: :string, desc: 'CSS selector for fragment extraction (#id, .class, element)'
+  def extract(file)
+    unless File.exist?(file)
+      puts "Error: File not found: #{file}"
+      exit 1
+    end
+
+    require_relative '../lib/blueprint/html2slim/slim_extractor'
+    extractor = Blueprint::Html2Slim::SlimExtractor.new(options)
+
+    result = extractor.extract_file(file)
+    if result[:success]
+      output_path = options[:output] || file.sub(/\.slim$/, '_extracted.slim')
+      puts "Extracted content to: #{output_path}"
+      puts "  Removed: #{result[:removed].join(", ")}" if result[:removed]&.any?
+      puts "  Kept: #{result[:kept].join(", ")}" if result[:kept]&.any?
+    else
+      puts "Error extracting from #{file}: #{result[:error]}"
+    end
+  end
+
+  desc 'validate FILE [FILE2 ...]', 'Validate Slim syntax and check for issues'
+  option :strict, type: :boolean, desc: 'Enable strict mode (check tabs, inline styles, etc.)'
+  option :check_rails, type: :boolean, desc: 'Check Rails conventions (helpers, CSRF, asset pipeline)'
+  def validate(*files)
+    if files.empty?
+      puts 'Error: No files specified'
+      puts 'Usage: slimtool validate FILE [FILE2 ...]'
+      exit 1
+    end
+
+    require_relative '../lib/blueprint/html2slim/slim_validator'
+    validator = Blueprint::Html2Slim::SlimValidator.new(options)
+
+    total_errors = 0
+    total_warnings = 0
+
+    files.each do |file|
+      if File.exist?(file)
+        result = validator.validate_file(file)
+        if result[:valid]
+          puts "✓ #{file} - Valid"
+        else
+          puts "✗ #{file} - Invalid"
+          result[:errors]&.each { |error| puts "  ERROR: #{error}" }
+          total_errors += result[:errors]&.size || 0
+        end
+
+        if result[:warnings]&.any?
+          result[:warnings].each { |warning| puts "  WARNING: #{warning}" }
+          total_warnings += result[:warnings].size
+        end
+      else
+        puts "File not found: #{file}"
+        total_errors += 1
+      end
+    end
+
+    puts "\nValidation complete: #{total_errors} error(s), #{total_warnings} warning(s)"
+    exit(1) if total_errors.positive?
+  end
+
+  desc 'railsify FILE [FILE2 ...]', 'Convert static Slim to Rails conventions'
+  option :add_helpers, type: :boolean, default: true, desc: 'Convert links to Rails helpers (requires --mappings)'
+  option :use_assets, type: :boolean, default: true, desc: 'Convert CDN assets to Rails asset pipeline'
+  option :add_csrf, type: :boolean, desc: 'Add CSRF meta tags to head section'
+  option :backup, aliases: '-b', type: :boolean, desc: 'Create .bak backup before converting'
+  option :dry_run, aliases: '-n', type: :boolean, desc: 'Preview changes without modifying files'
+  option :mappings, type: :string, desc: 'JSON/YAML file with URL-to-helper mappings (required for link conversion)'
+  def railsify(*files)
+    if files.empty?
+      puts 'Error: No files specified'
+      puts 'Usage: slimtool railsify FILE [FILE2 ...]'
+      exit 1
+    end
+
+    require_relative '../lib/blueprint/html2slim/slim_railsifier'
+    railsifier = Blueprint::Html2Slim::SlimRailsifier.new(options)
+
+    files.each do |file|
+      if File.exist?(file)
+        result = railsifier.railsify_file(file)
+        if result[:success]
+          puts "Railsified: #{file}"
+          puts "  Conversions: #{result[:conversions].join(", ")}" if result[:conversions]&.any?
+        else
+          puts "Error converting #{file}: #{result[:error]}"
+        end
+      else
+        puts "File not found: #{file}"
+      end
+    end
+  end
+
+  desc 'extract-links FILE [FILE2 ...]', 'Find and report all hardcoded links'
+  option :output, aliases: '-o', desc: 'Save results to file (auto-detect format by extension)'
+  option :format, default: 'json', enum: %w[json yaml text], desc: 'Output format (json, yaml, or text)'
+  def extract_links(*files)
+    if files.empty?
+      puts 'Error: No files specified'
+      puts 'Usage: slimtool extract-links FILE [FILE2 ...]'
+      exit 1
+    end
+
+    require_relative '../lib/blueprint/html2slim/link_extractor'
+    extractor = Blueprint::Html2Slim::LinkExtractor.new(options)
+
+    all_links = {}
+
+    files.each do |file|
+      if File.exist?(file)
+        result = extractor.extract_links(file)
+        if result[:success]
+          all_links[file] = result[:links] if result[:links].any?
+        else
+          puts "Error extracting from #{file}: #{result[:error]}"
+        end
+      else
+        puts "File not found: #{file}"
+      end
+    end
+
+    if all_links.any?
+      if options[:output]
+        extractor.save_links(all_links, options[:output])
+        puts "Extracted links saved to: #{options[:output]}"
+      else
+        extractor.display_links(all_links)
+      end
+
+      total = all_links.values.flatten.size
+      puts "\nTotal: #{total} hardcoded link(s) found in #{all_links.keys.size} file(s)"
+    else
+      puts 'No hardcoded links found'
+    end
+  end
+
+  desc 'version', 'Show version'
+  def version
+    require_relative '../lib/blueprint/html2slim/version'
+    puts "slimtool #{Blueprint::Html2Slim::VERSION}"
+  end
+
+  def self.start(given_args = ARGV, config = {})
+    # Show general help for no args or 'help' without specific command
+    if given_args.empty? || (given_args == ['help']) || (given_args == ['-h']) || (given_args == ['--help'])
+      puts 'Slim Template Manipulation Tool'
+      puts ''
+      puts 'Usage: slimtool COMMAND [OPTIONS] FILE [FILE2 ...]'
+      puts ''
+      puts 'Commands:'
+      puts '  fix           Fix common Slim syntax issues'
+      puts '  extract       Extract content sections from Slim files'
+      puts '  validate      Validate Slim syntax'
+      puts '  railsify      Convert to Rails conventions'
+      puts '  extract-links Extract hardcoded links from templates'
+      puts '  version       Show version'
+      puts '  help          Show this help message'
+      puts ''
+      puts 'Examples:'
+      puts '  # Fix text starting with slash'
+      puts '  slimtool fix pricing.slim'
+      puts ''
+      puts '  # Extract main content, removing navigation'
+      puts '  slimtool extract index.slim --remove head,nav,footer'
+      puts ''
+      puts '  # Extract high-level structure only'
+      puts '  slimtool extract page.slim --outline 2'
+      puts ''
+      puts '  # Extract specific section by CSS selector'
+      puts '  slimtool extract page.slim --selector "#content"'
+      puts ''
+      puts '  # Validate with strict style checking'
+      puts '  slimtool validate *.slim --strict --check-rails'
+      puts ''
+      puts '  # Convert to Rails helpers with custom mappings'
+      puts '  slimtool railsify template.slim --mappings urls.json'
+      puts ''
+      puts '  # Find all hardcoded links'
+      puts '  slimtool extract-links views/**/*.slim -o links.json'
+      puts ''
+      puts 'Run "slimtool COMMAND --help" for more information on a command.'
+      exit 0
+    else
+      super
+    end
+  end
+end
+
+SlimToolCLI.start(ARGV)

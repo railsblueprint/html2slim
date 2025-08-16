@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
   end
 
   spec.bindir        = 'bin'
-  spec.executables   = ['html2slim']
+  spec.executables   = %w[html2slim slimtool]
   spec.require_paths = ['lib']
 
   spec.add_dependency 'erubi', '~> 1.12'
