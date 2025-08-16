@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-
 require 'thor'
 require 'pathname'
 require_relative '../lib/blueprint/html2slim'
@@ -42,7 +41,7 @@ class Html2SlimCLI < Thor
       puts '  html2slim -d old_views/*.erb  # Convert and delete sources'
       exit 0
     elsif given_args.first == 'version' || given_args.include?('-v') || given_args.include?('--version')
-      puts 'html2slim 1.0.0'
+      puts 'html2slim 1.1.0'
       exit 0
     else
       args = given_args.dup
@@ -71,15 +70,13 @@ class Html2SlimCLI < Thor
       puts 'Error: -o/--output can only be used with a single input file'
       exit 1
     end
-    
+
     if options[:output] && options[:target_dir]
       puts 'Error: Cannot use both -o/--output and -t/--target-dir together'
       exit 1
     end
-    
-    if options[:backup] && options[:delete]
-      puts 'Warning: -b/--backup takes precedence over -d/--delete'
-    end
+
+    puts 'Warning: -b/--backup takes precedence over -d/--delete' if options[:backup] && options[:delete]
 
     converter = Blueprint::Html2Slim::Converter.new(indent_size: options[:indent])
     processed_count = 0
@@ -136,7 +133,7 @@ class Html2SlimCLI < Thor
                                     else
                                       input_path.basename
                                     end
-                    
+
                     # Apply smart naming convention to the filename
                     output_name = case relative_path.to_s
                                   when /\.html\.erb$/
@@ -148,7 +145,7 @@ class Html2SlimCLI < Thor
                                   else
                                     "#{relative_path}.slim"
                                   end
-                    
+
                     Pathname.new(options[:target_dir]).join(output_name)
                   else
                     # Smart naming convention in place
@@ -182,7 +179,7 @@ class Html2SlimCLI < Thor
     end
 
     begin
-      html_content = File.read(input_path)
+      html_content = File.read(input_path, encoding: 'UTF-8')
       slim_content = converter.convert(html_content)
 
       # Create backup if requested
@@ -195,16 +192,16 @@ class Html2SlimCLI < Thor
       output_path.dirname.mkpath
       # Ensure content ends with newline when writing to file
       slim_content += "\n" unless slim_content.end_with?("\n")
-      File.write(output_path, slim_content)
+      File.write(output_path, slim_content, encoding: 'UTF-8')
 
       puts "Converted: #{input_path} -> #{output_path}"
-      
+
       # Delete source file if requested (and not backing up)
       if options[:delete] && !options[:backup]
         File.delete(input_path)
         puts "Deleted: #{input_path}"
       end
-      
+
       true
     rescue StandardError => e
       puts "Error converting #{input_path}: #{e.message}"

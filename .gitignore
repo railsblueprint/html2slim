@@ -55,9 +55,10 @@ Gemfile.lock
 # Used by RuboCop. Remote config files pulled in from inherit_from directive.
 # .rubocop-https?--*
 
-# Claude specific files
+# Claude specific files (except project memory)
 .claude/
 CLAUDE.md
+!.claude/PROJECT.md
 
 # Old html2slim gem copy
 /html2slim/

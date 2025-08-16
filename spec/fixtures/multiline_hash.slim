@@ -1,0 +1,12 @@
+div
+  ruby:
+    options = {
+      class: "form-control",
+      placeholder: "Enter your name",
+      required: true,
+      data: {
+        validate: "presence",
+        message: "Name is required"
+      }
+    }
+  = text_field_tag :name, nil, options

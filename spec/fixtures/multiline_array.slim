@@ -1,0 +1,13 @@
+div
+  ruby:
+    items = [
+      { name: "Apple", price: 1.99 },
+      { name: "Banana", price: 0.99 },
+      { name: "Orange", price: 2.49 },
+      { name: "Grape", price: 3.99 }
+    ]
+  - items.each do |item|
+    p
+      = item[:name]
+      | : $
+      = item[:price]

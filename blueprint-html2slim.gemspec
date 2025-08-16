@@ -7,7 +7,8 @@ Gem::Specification.new do |spec|
   spec.email         = ['info@railsblueprint.com']
 
   spec.summary       = 'Convert HTML and ERB files to Slim format'
-  spec.description   = 'A Ruby command-line tool to convert HTML and ERB files to Slim format with smart naming conventions and backup options'
+  spec.description   = 'A Ruby command-line tool to convert HTML and ERB files to Slim format ' \
+                       'with smart naming conventions and backup options'
   spec.homepage      = 'https://github.com/railsblueprint/html2slim'
   spec.license       = 'MIT'
   spec.required_ruby_version = '>= 2.7.0'

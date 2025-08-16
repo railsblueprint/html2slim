@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Multiline ERB Test</title>
+</head>
+<body>
+  <h1>User Management</h1>
+  
+  <%
+    # Initialize variables
+    users = User.all
+    admin_count = users.select(&:admin?).count
+    active_count = users.select(&:active?).count
+  %>
+  
+  <div class="stats">
+    <p>Total users: <%= users.count %></p>
+    <p>Admins: <%= admin_count %></p>
+    <p>Active: <%= active_count %></p>
+  </div>
+  
+  <% users.each do |user| %>
+    <div class="user-card">
+      <h2><%= user.name %></h2>
+      
+      <%
+        if user.admin?
+          badge_class = "badge-admin"
+          badge_text = "Administrator"
+        elsif user.moderator?
+          badge_class = "badge-mod"
+          badge_text = "Moderator"
+        else
+          badge_class = "badge-user"
+          badge_text = "User"
+        end
+      %>
+      
+      <span class="<%= badge_class %>"><%= badge_text %></span>
+      
+      <% if user.posts.any? %>
+        <h3>Recent Posts</h3>
+        <ul>
+          <% user.posts.recent.limit(5).each do |post| %>
+            <li>
+              <%= link_to post.title, post_path(post) %>
+              <small>(<%= post.created_at.to_date %>)</small>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p>No posts yet</p>
+      <% end %>
+    </div>
+  <% end %>
+  
+  <%=
+    form_with model: User.new,
+              url: users_path,
+              local: true,
+              html: { class: "user-form" } do |f|
+  %>
+    <div class="form-group">
+      <%= f.label :name %>
+      <%= f.text_field :name, class: "form-control" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :email %>
+      <%= f.email_field :email, class: "form-control" %>
+    </div>
+    <%= f.submit "Create User", class: "btn btn-primary" %>
+  <% end %>
+</body>
+</html>

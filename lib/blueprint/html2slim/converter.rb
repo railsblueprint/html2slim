@@ -17,25 +17,25 @@ module Blueprint
 
       def convert(html_content)
         lines = []
-        
+
         # Handle DOCTYPE declaration
         if html_content =~ /<!DOCTYPE\s+(.+?)>/i
           doctype_content = ::Regexp.last_match(1)
-          if doctype_content =~ /strict/i
-            lines << "doctype strict"
-          elsif doctype_content =~ /transitional/i
-            lines << "doctype transitional"
-          elsif doctype_content =~ /frameset/i
-            lines << "doctype frameset"
-          elsif doctype_content =~ /html$/i
-            lines << "doctype html"
-          else
-            lines << "doctype"
-          end
+          lines << if doctype_content =~ /strict/i
+                     'doctype strict'
+                   elsif doctype_content =~ /transitional/i
+                     'doctype transitional'
+                   elsif doctype_content =~ /frameset/i
+                     'doctype frameset'
+                   elsif doctype_content =~ /html$/i
+                     'doctype html'
+                   else
+                     'doctype'
+                   end
           # Remove DOCTYPE from content for further processing
           html_content = html_content.sub(/<!DOCTYPE\s+.+?>/i, '')
         end
-        
+
         html_content = preprocess_erb(html_content)
         # Use HTML.parse for full documents, DocumentFragment for fragments
         if html_content =~ /<html/i
@@ -68,7 +68,7 @@ module Blueprint
       def preprocess_erb(content)
         # Convert ERB blocks to span elements to preserve hierarchy
         # This approach is inspired by the original html2slim gem
-        
+
         # Keep ERB tags in attributes unchanged by temporarily replacing them
         erb_in_attrs = []
         content = content.gsub(/(<[^>]*)(<%=?.+?%>)([^>]*>)/) do
@@ -79,65 +79,79 @@ module Blueprint
           erb_in_attrs << erb
           "#{before}#{placeholder}#{after}"
         end
-        
+
         # Handle multi-line ERB blocks first (with m flag for multiline)
         content = content.gsub(/<%\s*\n(.*?)\n\s*-?%>/m) do
-          code_lines = ::Regexp.last_match(1).strip.split("\n")
-          # Convert to multiple single-line ERB comments
-          code_lines.map { |line| "<!--ERB_CODE:#{line.strip}-->" }.join("\n")
+          code_block = ::Regexp.last_match(1).strip
+          # Mark as multiline block for special handling
+          "<!--ERB_MULTILINE_CODE:#{code_block.gsub("-->", "__ARROW__")}-->"
         end
-        
+
+        # Handle multiline ERB output blocks (e.g., <%= form_with(...) spanning multiple lines %>)
+        content = content.gsub(/<%=\s*\n(.*?)\n\s*-?%>/m) do
+          code_block = ::Regexp.last_match(1).strip
+          # Check if it ends with do block
+          if code_block =~ /\bdo\s*(\|[^|]*\|)?\s*$/
+            # Convert to single line for block processing
+            single_line = code_block.gsub(/\s+/, ' ')
+            "<%= #{single_line} %>" # Keep for block processing
+          else
+            # Mark as multiline output for special handling
+            "<!--ERB_MULTILINE_OUTPUT:#{code_block.gsub("-->", "__ARROW__")}-->"
+          end
+        end
+
         # Convert simple ERB output tags that don't create blocks
         # This prevents them from being caught by the block regex
         content = content.gsub(/<%=\s*([^%]+?)\s*%>/) do
           code = ::Regexp.last_match(1).strip
           # Skip if it's a do block
           if code =~ /\bdo\s*(\|[^|]*\|)?\s*$/
-            "<%= #{code} %>"  # Keep original, will be processed later
+            "<%= #{code} %>" # Keep original, will be processed later
           else
             %(<!--ERB_OUTPUT:#{code}-->)
           end
         end
-        
+
         # Convert ERB blocks that create structure (do...end, if...end, etc.)
         # to span elements so their content becomes proper children
-        content = content.gsub(/<%(-|=)?\s*((\s*(case|if|for|unless|until|while) .+?)|.+?do\s*(\|[^|]*\|)?\s*)-?%>/) do
+        content = content.gsub(/<%(-|=)?\s*((\s*(case|if|for|unless|until|while) .+?)|.+?do\s*(\|[^|]*\|)?\s*)-?%>/m) do
           type = ::Regexp.last_match(1)
           code = ::Regexp.last_match(2).strip
           # Preserve whether it was = or - in the code attribute
           prefix = type == '=' ? '=' : ''
-          %(<span erb-code="#{prefix}#{code.gsub('"', '&quot;')}">)
+          %(<span erb-code="#{prefix}#{code.gsub('"', "&quot;")}">)
         end
-        
+
         # Handle else
         content = content.gsub(/<%-?\s*else\s*-?%>/, %(</span><span erb-code="else">))
-        
+
         # Handle elsif
         content = content.gsub(/<%-?\s*(elsif .+?)\s*-?%>/) do
           code = ::Regexp.last_match(1).strip
-          %(</span><span erb-code="#{code.gsub('"', '&quot;')}">)
+          %(</span><span erb-code="#{code.gsub('"', "&quot;")}">)
         end
-        
+
         # Handle when
         content = content.gsub(/<%-?\s*(when .+?)\s*-?%>/) do
           code = ::Regexp.last_match(1).strip
-          %(</span><span erb-code="#{code.gsub('"', '&quot;')}">)
+          %(</span><span erb-code="#{code.gsub('"', "&quot;")}">)
         end
-        
+
         # Handle end statements - close the span
         content = content.gsub(/<%\s*(end|}|end\s+-)\s*%>/, %(</span>))
-        
+
         # Convert any remaining ERB code tags to comments
         content = content.gsub(/<%-?\s*(.+?)\s*%>/) do
           code = ::Regexp.last_match(1).strip
           %(<!--ERB_CODE:#{code}-->)
         end
-        
+
         # Restore ERB tags in attributes
         erb_in_attrs.each_with_index do |erb, i|
           content = content.gsub("ERB_IN_ATTR_#{i}", erb)
         end
-        
+
         content
       end
 
@@ -161,24 +175,24 @@ module Blueprint
         # Check if this is an ERB span element
         if node.name == 'span' && node['erb-code']
           erb_code = node['erb-code'].gsub('&quot;', '"')
-          
+
           # Determine if it's output (=) or code (-)
-          if erb_code =~ /^(if|unless|case|for|while|elsif|else|when)\b/
-            lines << "#{indent}- #{erb_code}"
-          elsif erb_code.start_with?('=')
-            # It was originally <%= ... %>, use = prefix
-            lines << "#{indent}= #{erb_code[1..-1].strip}"
-          else
-            # It was originally <% ... %>, use - prefix
-            lines << "#{indent}- #{erb_code}"
-          end
-          
+          lines << if erb_code =~ /^(if|unless|case|for|while|elsif|else|when)\b/
+                     "#{indent}- #{erb_code}"
+                   elsif erb_code.start_with?('=')
+                     # It was originally <%= ... %>, use = prefix
+                     "#{indent}= #{erb_code[1..-1].strip}"
+                   else
+                     # It was originally <% ... %>, use - prefix
+                     "#{indent}- #{erb_code}"
+                   end
+
           # Process children with increased depth
           node.children.each do |child|
             child_lines = process_node(child, depth + 1)
             lines.concat(child_lines) unless child_lines.empty?
           end
-          
+
           return lines
         end
 
@@ -206,6 +220,10 @@ module Blueprint
             text = process_inline_text(text.strip)
             if text.empty?
               lines << "#{indent}#{tag_line}"
+            elsif text.start_with?('/')
+              # Text starting with / needs pipe notation to avoid being treated as comment
+              lines << "#{indent}#{tag_line}"
+              lines << "#{" " * ((depth + 1) * @indent_size)}| #{text}"
             else
               lines << "#{indent}#{tag_line} #{text}"
             end
@@ -227,7 +245,7 @@ module Blueprint
         # Strip and split classes, filtering out empty strings
         classes = node['class']&.strip&.split(/\s+/)&.reject(&:empty?) || []
         attributes = collect_attributes(node)
-        
+
         # Treat empty id as no id
         id = nil if id && id.strip.empty?
 
@@ -299,14 +317,36 @@ module Blueprint
         # Extract indentation level if present
         extra_indent = 0
         if comment_text =~ /:INDENT:(\d+)$/
-          extra_indent = $1.to_i
+          extra_indent = ::Regexp.last_match(1).to_i
           comment_text = comment_text.sub(/:INDENT:\d+$/, '')
         end
-        
+
         total_depth = depth + extra_indent
         indent = ' ' * (total_depth * @indent_size)
 
-        if comment_text.start_with?('ERB_OUTPUT_BLOCK:')
+        if comment_text.start_with?('ERB_MULTILINE_CODE:')
+          erb_content = comment_text.sub('ERB_MULTILINE_CODE:', '').gsub('__ARROW__', '-->')
+          # Use ruby: block for multiline code
+          lines = ["#{indent}ruby:"]
+          erb_content.lines.each do |line|
+            lines << "#{indent}  #{line.rstrip}"
+          end
+          lines
+        elsif comment_text.start_with?('ERB_MULTILINE_OUTPUT:')
+          erb_content = comment_text.sub('ERB_MULTILINE_OUTPUT:', '').gsub('__ARROW__', '-->')
+          # For multiline output, use line continuation
+          lines = erb_content.lines.map(&:rstrip)
+          if lines.length == 1
+            ["#{indent}= #{lines[0]}"]
+          else
+            result = ["#{indent}= #{lines[0]} \\"]
+            lines[1..-2].each do |line|
+              result << "#{indent}    #{line} \\"
+            end
+            result << "#{indent}    #{lines[-1]}" if lines.length > 1
+            result
+          end
+        elsif comment_text.start_with?('ERB_OUTPUT_BLOCK:')
           erb_content = comment_text.sub('ERB_OUTPUT_BLOCK:', '')
           ["#{indent}= #{erb_content}"]
         elsif comment_text.start_with?('ERB_OUTPUT:')

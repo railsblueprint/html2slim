@@ -132,7 +132,7 @@ RSpec.describe 'CLI Integration' do
         File.write(input_file, '<div>Test</div>')
 
         Dir.chdir(dir) do
-          stdout, _stderr, status = Open3.capture3("#{cli_path} -d test.html")
+          stdout, _stderr, status = Open3.capture3("#{cli_path} -n test.html")
 
           expect(status).to be_success
           expect(stdout).to include('Would convert: test.html -> test.html.slim')
@@ -146,7 +146,7 @@ RSpec.describe 'CLI Integration' do
         File.write(File.join(dir, 'test.html'), '<div>Test</div>')
 
         Dir.chdir(dir) do
-          stdout, _stderr, status = Open3.capture3("#{cli_path} -d -b test.html")
+          stdout, _stderr, status = Open3.capture3("#{cli_path} -n -b test.html")
 
           expect(status).to be_success
           expect(stdout).to include('Would backup: test.html -> test.html.bak')
@@ -249,7 +249,7 @@ RSpec.describe 'CLI Integration' do
       stdout, _stderr, status = Open3.capture3("#{cli_path} -v")
 
       expect(status).to be_success
-      expect(stdout).to include('html2slim 1.0.0')
+      expect(stdout).to include('html2slim 1.1.0')
     end
   end
 

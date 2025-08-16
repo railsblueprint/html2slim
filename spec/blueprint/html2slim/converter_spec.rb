@@ -107,6 +107,250 @@ RSpec.describe Blueprint::Html2Slim::Converter do
         expect(converter.convert(html).strip).to eq(expected)
       end
 
+      it 'handles multiline ERB code blocks' do
+        html = <<-HTML
+          <div>
+            <%
+              user = User.find(params[:id])
+              posts = user.posts.published
+              comments = user.comments.recent
+            %>
+            <h1><%= user.name %></h1>
+          </div>
+        HTML
+        result = converter.convert(html)
+        expect(result).to include('ruby:')
+        expect(result).to include('user = User.find(params[:id])')
+        expect(result).to include('posts = user.posts.published')
+        expect(result).to include('comments = user.comments.recent')
+        expect(result).to include('h1')
+        expect(result).to include('= user.name')
+      end
+
+      it 'handles multiline ERB with if statements' do
+        html = <<-HTML
+          <div>
+            <%
+              if user.admin?
+                role = "Administrator"
+              else
+                role = "User"
+              end
+            %>
+            <span><%= role %></span>
+          </div>
+        HTML
+        result = converter.convert(html)
+        expect(result).to include('ruby:')
+        expect(result).to include('if user.admin?')
+        expect(result).to include('role = "Administrator"')
+        expect(result).to include('else')
+        expect(result).to include('role = "User"')
+        expect(result).to include('end')
+        expect(result).to include('span')
+        expect(result).to include('= role')
+      end
+
+      it 'handles multiline ERB output blocks' do
+        html = <<-HTML
+          <div>
+            <%=
+              link_to "Profile",
+                      user_path(@user),
+                      class: "btn btn-primary",
+                      data: { confirm: "Are you sure?" }
+            %>
+          </div>
+        HTML
+        result = converter.convert(html)
+        # The multiline output should be preserved as a single output statement
+        expect(result).to include('= link_to "Profile",')
+      end
+
+      it 'handles multiline hash definitions in ERB' do
+        html = <<-HTML
+          <div>
+            <%
+              options = {
+                class: "form-control",
+                placeholder: "Enter your name",
+                required: true,
+                data: {
+                  validate: "presence",
+                  message: "Name is required"
+                }
+              }
+            %>
+            <%= text_field_tag :name, nil, options %>
+          </div>
+        HTML
+        result = converter.convert(html)
+        expect(result).to include('ruby:')
+        expect(result).to include('options = {')
+        expect(result).to include('class: "form-control",')
+        expect(result).to include('placeholder: "Enter your name",')
+        expect(result).to include('required: true,')
+        expect(result).to include('data: {')
+        expect(result).to include('validate: "presence",')
+        expect(result).to include('message: "Name is required"')
+        expect(result).to include('= text_field_tag :name, nil, options')
+      end
+
+      it 'handles multiline array definitions in ERB' do
+        html = <<-HTML
+          <div>
+            <%
+              items = [
+                { name: "Apple", price: 1.99 },
+                { name: "Banana", price: 0.99 },
+                { name: "Orange", price: 2.49 },
+                { name: "Grape", price: 3.99 }
+              ]
+            %>
+            <% items.each do |item| %>
+              <p><%= item[:name] %>: $<%= item[:price] %></p>
+            <% end %>
+          </div>
+        HTML
+        result = converter.convert(html)
+        expect(result).to include('ruby:')
+        expect(result).to include('items = [')
+        expect(result).to include('{ name: "Apple", price: 1.99 },')
+        expect(result).to include('{ name: "Banana", price: 0.99 },')
+        expect(result).to include('- items.each do |item|')
+        expect(result).to include('= item[:name]')
+        expect(result).to include('= item[:price]')
+      end
+
+      it 'handles complex multiline method calls in ERB output' do
+        html = <<-HTML
+          <div class="form-wrapper">
+            <%= form_with(
+                  model: @user,
+                  url: user_path(@user),
+                  method: :patch,
+                  local: true,
+                  html: {
+                    class: "user-form",
+                    data: {
+                      remote: false,
+                      confirm: "Save changes?"
+                    }
+                  }
+                ) do |f| %>
+              <%= f.text_field :name %>
+              <%= f.submit "Save" %>
+            <% end %>
+          </div>
+        HTML
+        result = converter.convert(html)
+        expect(result).to include('.form-wrapper')
+        expect(result).to include('= form_with(')
+        expect(result).to include('= f.text_field :name')
+        expect(result).to include('= f.submit "Save"')
+      end
+
+      it 'handles multiline string concatenation in ERB' do
+        html = <<-HTML
+          <div>
+            <%
+              message = "Welcome to our site! " +
+                        "We're glad you're here. " +
+                        "Please take a moment to " +
+                        "complete your profile."
+            %>
+            <p><%= message %></p>
+          </div>
+        HTML
+        result = converter.convert(html)
+        expect(result).to include('ruby:')
+        expect(result).to include('message = "Welcome to our site! " +')
+        expect(result).to include('"We\'re glad you\'re here. " +')
+        expect(result).to include('"Please take a moment to " +')
+        expect(result).to include('"complete your profile."')
+        expect(result).to include('= message')
+      end
+
+      it 'handles inline array with each method' do
+        html = <<-HTML
+          <div>
+            <%
+              [
+                { name: "Apple", price: 1.99 },
+                { name: "Banana", price: 0.99 }
+              ].each do |item| %>
+              <p><%= item[:name] %>: $<%= item[:price] %></p>
+            <% end %>
+          </div>
+        HTML
+        result = converter.convert(html)
+        expect(result).to include('- [')
+        expect(result).to include('{ name: "Apple", price: 1.99 },')
+        expect(result).to include('{ name: "Banana", price: 0.99 }')
+        expect(result).to include('].each do |item|')
+        expect(result).to include('= item[:name]')
+        expect(result).to include('= item[:price]')
+      end
+
+      it 'handles nested ERB control structures' do
+        html = <<-HTML
+          <div>
+            <% @users.each do |user| %>
+              <div class="user">
+                <% if user.active? %>
+                  <span class="status">Active</span>
+                  <% user.posts.each do |post| %>
+                    <article>
+                      <h3><%= post.title %></h3>
+                      <p><%= post.body %></p>
+                    </article>
+                  <% end %>
+                <% else %>
+                  <span class="status">Inactive</span>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        HTML
+        result = converter.convert(html)
+        expect(result).to include('- @users.each do |user|')
+        expect(result).to include('.user')
+        expect(result).to include('- if user.active?')
+        expect(result).to include('span.status Active')
+        expect(result).to include('- user.posts.each do |post|')
+        expect(result).to include('article')
+        expect(result).to include('h3')
+        expect(result).to include('= post.title')
+        expect(result).to include('= post.body')
+        expect(result).to include('- else')
+        expect(result).to include('span.status Inactive')
+      end
+
+      it 'handles ERB blocks with complex indentation' do
+        html = <<-HTML
+          <% if @user %>
+            <div class="user-profile">
+              <%
+                full_name = [@user.first_name, @user.last_name].join(' ')
+                age = Date.today.year - @user.birth_date.year
+              %>
+              <h2><%= full_name %></h2>
+              <p>Age: <%= age %></p>
+            </div>
+          <% end %>
+        HTML
+        result = converter.convert(html)
+        expect(result).to include('- if @user')
+        expect(result).to include('.user-profile')
+        expect(result).to include('ruby:')
+        expect(result).to include("full_name = [@user.first_name, @user.last_name].join(' ')")
+        expect(result).to include('age = Date.today.year - @user.birth_date.year')
+        expect(result).to include('h2')
+        expect(result).to include('= full_name')
+        expect(result).to include("p\n      | Age:")
+        expect(result).to include('= age')
+      end
+
       it 'converts ERB code tags' do
         html = '<div><% if @user %><p>Hello</p><% end %></div>'
         expected = "div\n  - if @user\n    p Hello"
@@ -126,11 +370,101 @@ RSpec.describe Blueprint::Html2Slim::Converter do
       end
     end
 
+    context 'with Unicode characters' do
+      it 'handles CJK characters' do
+        html = '<div>Hello 世界</div><p>日本語 テスト</p><span>中文测试</span>'
+        result = converter.convert(html)
+        expect(result).to include('div Hello 世界')
+        expect(result).to include('p 日本語 テスト')
+        expect(result).to include('span 中文测试')
+      end
+
+      it 'handles emoji characters' do
+        html = '<div class="emoji">🎉 Party 🚀 Rocket ❤️ Love</div>'
+        expected = '.emoji 🎉 Party 🚀 Rocket ❤️ Love'
+        expect(converter.convert(html).strip).to eq(expected)
+      end
+
+      it 'handles European accented characters' do
+        html = '<p>Café €100 ñoño àèìòù äëïöü</p>'
+        expected = 'p Café €100 ñoño àèìòù äëïöü'
+        expect(converter.convert(html).strip).to eq(expected)
+      end
+
+      it 'handles Cyrillic characters' do
+        html = '<span>Здравствуй мир</span>'
+        expected = 'span Здравствуй мир'
+        expect(converter.convert(html).strip).to eq(expected)
+      end
+
+      it 'handles Arabic and Hebrew characters' do
+        html = '<h1>العربية اختبار</h1><h2>עברית בדיקה</h2>'
+        result = converter.convert(html)
+        expect(result).to include('h1 العربية اختبار')
+        expect(result).to include('h2 עברית בדיקה')
+      end
+
+      it 'handles mixed Unicode in attributes' do
+        html = '<div title="日本語 título" data-emoji="🎉">Content</div>'
+        expected = 'div[title="日本語 título" data-emoji="🎉"] Content'
+        expect(converter.convert(html).strip).to eq(expected)
+      end
+
+      it 'handles Unicode in class names' do
+        html = '<div class="класс 类名">Test</div>'
+        expected = '.класс.类名 Test'
+        expect(converter.convert(html).strip).to eq(expected)
+      end
+
+      it 'handles Unicode with slash prefix' do
+        html = '<p>/日本語 price</p><span>/€100</span>'
+        result = converter.convert(html)
+        expect(result).to include("p\n  | /日本語 price")
+        expect(result).to include("span\n  | /€100")
+      end
+    end
+
     context 'with text content' do
       it 'handles inline text' do
         html = '<p>This is a paragraph with text.</p>'
         expected = 'p This is a paragraph with text.'
         expect(converter.convert(html).strip).to eq(expected)
+      end
+
+      it 'handles text starting with slash inside span elements' do
+        html = '<h2 class="mb-4">$29<span class="fs-6 text-muted">/month</span></h2>'
+        expected = "h2.mb-4\n  | $29\n  span.fs-6.text-muted\n    | /month"
+        expect(converter.convert(html).strip).to eq(expected)
+      end
+
+      it 'handles Bootstrap pricing card with text starting with slash' do
+        html = <<-HTML
+          <div class="row g-4 justify-content-center">
+              <div class="col-lg-4">
+                  <div class="pricing-card">
+                      <h4 class="mb-4">Starter</h4>
+                      <h2 class="mb-4">$29<span class="fs-6 text-muted">/month</span></h2>
+                      <ul class="list-unstyled mb-4">
+                          <li class="mb-2"><i class="fas fa-check text-success me-2"></i> 100K API calls</li>
+                          <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Basic models</li>
+                          <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Email support</li>
+                          <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Dashboard access</li>
+                      </ul>
+                      <a href="pricing.html" class="btn btn-outline-primary w-100">Learn More</a>
+                  </div>
+              </div>
+          </div>
+        HTML
+
+        result = converter.convert(html)
+        # Check that the /month text is properly preserved with pipe notation
+        expect(result).to include("span.fs-6.text-muted\n          | /month")
+        # Check other key elements are present
+        expect(result).to include('.row.g-4.justify-content-center')
+        expect(result).to include('.col-lg-4')
+        expect(result).to include('.pricing-card')
+        expect(result).to include('h4.mb-4 Starter')
+        expect(result).to include('a.btn.btn-outline-primary.w-100[href="pricing.html"] Learn More')
       end
 
       it 'handles multiline text' do

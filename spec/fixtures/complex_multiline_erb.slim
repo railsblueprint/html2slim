@@ -1,0 +1,160 @@
+doctype html
+html
+  head
+    title Complex Multiline ERB
+  body
+    h1 Complex ERB Patterns
+    
+    /! Multiline Hash Definition
+    .hash-example
+      / NOTE: This is currently broken - each line becomes a separate statement
+      - user_options = {
+      - name: "John Doe",
+      - email: "john@example.com",
+      - preferences: {
+      - notifications: true,
+      - theme: "dark",
+      - language: "en"
+      - },
+      - roles: ["admin", "moderator"],
+      - metadata: {
+      - created_at: Time.now,
+      - updated_at: Time.now,
+      - login_count: 42
+      - }
+      - }
+      p
+        | User: 
+        = user_options[:name]
+    
+    /! Multiline Array with Complex Objects
+    .array-example
+      ruby:
+        products = [
+          {
+            id: 1,
+            name: "Laptop",
+            price: 999.99,
+            specs: {
+              ram: "16GB",
+              storage: "512GB SSD"
+            }
+          },
+          {
+            id: 2,
+            name: "Mouse",
+            price: 29.99,
+            specs: {
+              type: "Wireless",
+              dpi: 1600
+            }
+          }
+        ]
+      - products.each do |product|
+        .product
+          h3 = product[:name]
+          p
+            | $
+            = product[:price]
+    
+    /! Multiline Method Call with Complex Arguments
+    .form-example
+      = form_with( \
+          model: @user, \
+          url: user_path(@user), \
+          method: :patch, \
+          local: true, \
+          html: { \
+            class: "user-form needs-validation", \
+            id: "edit-user-form", \
+            data: { \
+              controller: "form-validation", \
+              action: "submit->form-validation#validate", \
+              turbo: false \
+            } \
+          }, \
+          data: { \
+            turbo_confirm: "Are you sure?", \
+            turbo_frame: "_top" \
+          } \
+        ) do |f|
+        
+        .form-group
+          = f.text_field :name, \
+              class: "form-control", \
+              placeholder: "Enter name", \
+              required: true, \
+              data: { \
+                validate: "presence", \
+                min_length: 3, \
+                max_length: 50 \
+              }
+        
+        = f.submit "Save Changes", \
+            class: "btn btn-primary btn-lg", \
+            data: { \
+              disable_with: "Saving...", \
+              confirm: "Save changes?" \
+            }
+    
+    /! Multiline String Concatenation
+    .string-example
+      ruby:
+        welcome_message = "Welcome to our application! " +
+                         "We're excited to have you here. " +
+                         "This platform offers many features " +
+                         "that will help you achieve your goals."
+        
+        sql_query = "SELECT users.*, profiles.* " +
+                   "FROM users " +
+                   "LEFT JOIN profiles ON users.id = profiles.user_id " +
+                   "WHERE users.active = true " +
+                   "ORDER BY users.created_at DESC"
+      p = welcome_message
+      code = sql_query
+    
+    /! Nested Control Structures with Multiline Conditions
+    .control-flow
+      - if current_user && \
+            current_user.active? && \
+            (current_user.admin? || current_user.moderator?) && \
+            current_user.verified_at.present?
+        
+        .admin-panel
+          - @posts.select { |post| \
+               post.published? && \
+               post.created_at > 1.week.ago && \
+               post.comments.count > 5 \
+             }.each do |post|
+            article
+              h3 = post.title
+              = truncate(post.content, \
+                  length: 200, \
+                  separator: ' ', \
+                  omission: '... (continued)')
+    
+    /! Method Chaining Across Multiple Lines
+    .chaining-example
+      = @users \
+          .active \
+          .where(role: "admin") \
+          .includes(:profile, :posts) \
+          .order(created_at: :desc) \
+          .limit(10) \
+          .map { |u| u.name } \
+          .join(", ")
+    
+    /! Complex Helper Method Call
+    .helper-example
+      = link_to user_path(@user), \
+            class: "btn btn-primary", \
+            method: :get, \
+            remote: true, \
+            data: { \
+              confirm: "View user profile?", \
+              toggle: "tooltip", \
+              placement: "top", \
+              original_title: "Click to view profile" \
+            } do
+        i.fas.fa-user
+        span View Profile
