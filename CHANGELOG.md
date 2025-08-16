@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.1] - 2025-01-16
+
+### Fixed
+- **SlimExtractor CSS Selector Support**: 
+  - Fixed child combinator selectors (`body > section`) not working
+  - Now correctly extracts multiple matching elements instead of just the first
+  - Added support for parent-child relationship validation in selectors
+- **Improved Content Extraction**:
+  - Enhanced default removal list to include `html`, `body`, `script` elements
+  - Added automatic cleanup of orphaned comments when sections are removed
+  - Fixed extraction logic to handle multiple sections properly
+- **Enhanced CSS Selector Parser**:
+  - Added `parse_simple_selector()` for individual selector components
+  - Implemented `matches_child_selector()` for parent-child verification
+  - Added `find_parent_item()` for structure hierarchy navigation
+
+### Changed
+- Default remove list now includes: `doctype html head nav header footer script body`
+- CSS selector extraction now handles multiple matching elements in single operation
+- Orphaned comments are automatically cleaned up during extraction
+
 ## [1.3.0] - 2025-01-16
 
 ### Added

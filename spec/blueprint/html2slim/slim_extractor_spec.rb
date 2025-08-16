@@ -207,6 +207,39 @@ RSpec.describe Blueprint::Html2Slim::SlimExtractor do
         expect(extracted).not_to include('header')
         expect(extracted).not_to include('Sidebar')
       end
+
+      it 'extracts by child combinator selector' do
+        content = <<~SLIM
+          html
+            body
+              header
+                h1 Site Header
+              section.hero
+                h2 Hero Section
+                p Hero content
+              section.about
+                h2 About Section
+                p About content
+              footer
+                p Footer content
+        SLIM
+
+        temp_file.write(content)
+        temp_file.rewind
+
+        extractor_with_selector = described_class.new(selector: 'body > section', output: output_file.path)
+        extractor_with_selector.extract_file(temp_file.path)
+
+        extracted = File.read(output_file.path)
+        expect(extracted).to include('section.hero')
+        expect(extracted).to include('h2 Hero Section')
+        expect(extracted).to include('section.about')
+        expect(extracted).to include('h2 About Section')
+        expect(extracted).not_to include('header')
+        expect(extracted).not_to include('footer')
+        expect(extracted).not_to include('html')
+        expect(extracted).not_to include('body')
+      end
     end
 
     context 'with original keep/remove logic' do
